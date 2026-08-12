@@ -11,6 +11,7 @@ import {
 import { VouchersService } from './vouchers.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
+import { ValidateVoucherDto } from './dto/validate-voucher.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -34,6 +35,20 @@ export class VouchersController {
     return this.vouchersService.findAll();
   }
 
+  @Post('validate')
+  @UseGuards(JwtAuthGuard)
+  async validate(@Body() dto: ValidateVoucherDto) {
+    const voucher = await this.vouchersService.validateVoucher(
+      dto.code,
+      dto.purchaseAmount,
+    );
+    const discount = this.vouchersService.calculateDiscount(
+      voucher,
+      dto.purchaseAmount,
+    );
+    return { voucher, discount };
+  }
+
   //Get voucher by id
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -48,11 +63,11 @@ export class VouchersController {
     return this.vouchersService.update(id, dto);
   }
 
-    //Delete voucher by id
-    @Delete(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    remove(@Param('id') id: string) {
-      return this.vouchersService.remove(id);
-    }
+  //Delete voucher by id
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string) {
+    return this.vouchersService.remove(id);
+  }
 }

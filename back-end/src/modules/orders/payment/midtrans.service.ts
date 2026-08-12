@@ -39,4 +39,8 @@ export class MidtransService {
 
     return transaction;
   }
+
+  async getTransactionStatus(orderId: string) {
+    return (this.snap as any).transaction.status(orderId);
+  }
 }

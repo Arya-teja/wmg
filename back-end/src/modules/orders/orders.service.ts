@@ -135,17 +135,30 @@ export class OrdersService {
       select: { name: true, email: true },
     });
 
+    const midtransItems = cart.items.map((item) => ({
+      id: item.productId,
+      name: item.product.name,
+      price: Number(item.product.price),
+      quantity: item.quantity,
+    }));
+
+    // Kalau ada diskon, tambahkan sebagai item terpisah dengan harga negatif
+    // supaya total item_details tetap sama persis dengan grandTotal
+    if (discountTotal > 0) {
+      midtransItems.push({
+        id: 'DISCOUNT',
+        name: voucher ? `Diskon Voucher (${voucher.code})` : 'Diskon',
+        price: -discountTotal,
+        quantity: 1,
+      });
+    }
+
     const midtransTransaction = await this.midtransService.createTransaction({
       orderId: order.id,
       amount: grandTotal,
       customerName: user?.name || 'Customer',
       customerEmail: user?.email || '',
-      items: cart.items.map((item) => ({
-        id: item.productId,
-        name: item.product.name,
-        price: Number(item.product.price),
-        quantity: item.quantity,
-      })),
+      items: midtransItems,
     });
 
     await this.prisma.payment.update({

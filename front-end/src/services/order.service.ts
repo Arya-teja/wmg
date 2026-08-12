@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { Order } from '@/types';
+import { Order, OrderStatus } from '@/types';
 
 interface CreateOrderPayload {
   recipientName: string;
@@ -21,6 +21,16 @@ export const orderService = {
 
   async getOrderById(id: string): Promise<Order> {
     const response = await api.get<Order>(`/orders/${id}`);
+    return response.data;
+  },
+
+  async getAllOrdersAdmin(): Promise<Order[]> {
+    const response = await api.get<Order[]>('/orders/admin/all');
+    return response.data;
+  },
+
+  async updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
+    const response = await api.patch<Order>(`/orders/${id}/status`, { status });
     return response.data;
   },
 };

@@ -10,9 +10,23 @@ import { CartModule } from './modules/cart/cart.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { VouchersModule } from './modules/vouchers/vouchers.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
-  imports: [ProductsModule, AuthModule, UsersModule, PrismaModule, CategoriesModule, CartModule, ReviewsModule, VouchersModule, OrdersModule],
+  imports: [
+    ProductsModule,
+    AuthModule,
+    UsersModule,
+    PrismaModule,
+    CategoriesModule,
+    CartModule,
+    ReviewsModule,
+    VouchersModule,
+    OrdersModule,
+    ScheduleModule.forRoot(),
+    ChatModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

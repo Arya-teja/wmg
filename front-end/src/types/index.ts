@@ -103,6 +103,7 @@ export interface Order {
   items: OrderItem[];
   payment: Payment | null;
   voucher: Voucher | null;
+  user?: { id: string; email: string; name: string };
 }
 
 export function formatPrice(price: number): string {
