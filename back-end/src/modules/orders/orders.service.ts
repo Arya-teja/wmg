@@ -34,15 +34,29 @@ export class OrdersService {
       throw new BadRequestException('Cart is empty');
     }
 
-    //validate stock for each item in cart
+    //validate stock for each item in cart, berdasarkan size yang dipilih
     for (const item of cart.items) {
-      if (item.quantity > item.product.stock) {
+      if (!item.size) {
         throw new BadRequestException(
-          `Not enough stock for product ${item.product.name}`,
+          `Ukuran belum dipilih untuk produk ${item.product.name}`,
+        );
+      }
+
+      const sizeStock = await this.prisma.productSizeStock.findUnique({
+        where: {
+          productId_size: {
+            productId: item.productId,
+            size: item.size,
+          },
+        },
+      });
+
+      if (!sizeStock || item.quantity > sizeStock.stock) {
+        throw new BadRequestException(
+          `Stok tidak cukup untuk ${item.product.name} ukuran ${item.size}`,
         );
       }
     }
-
     //calculate total price
     const total = cart.items.reduce((acc, item) => {
       return acc + Number(item.product.price) * item.quantity;
@@ -73,9 +87,14 @@ export class OrdersService {
 
     const order = await this.prisma.$transaction(async (tx) => {
       for (const item of cart.items) {
-        //update stock
-        await tx.product.update({
-          where: { id: item.productId },
+        //update stock berdasarkan size spesifik
+        await tx.productSizeStock.update({
+          where: {
+            productId_size: {
+              productId: item.productId,
+              size: item.size!,
+            },
+          },
           data: { stock: { decrement: item.quantity } },
         });
       }
@@ -101,6 +120,8 @@ export class OrdersService {
           productId: item.productId,
           quantity: item.quantity,
           price: item.product.price,
+          size: item.size,
+          color: item.color,
         })),
       });
 
@@ -281,7 +302,7 @@ export class OrdersService {
         orderStatus = 'PAID';
       } else {
         paymentStatus = 'FAILED';
-        orderStatus = 'CANCELLED';
+        orderStatus = 'CANCELED';
       }
     } else if (
       transaction_status === 'deny' ||
@@ -289,7 +310,7 @@ export class OrdersService {
       transaction_status === 'expire'
     ) {
       paymentStatus = 'FAILED';
-      orderStatus = 'CANCELLED';
+      orderStatus = 'CANCELED';
     } else {
       paymentStatus = 'PENDING';
       orderStatus = 'PENDING';

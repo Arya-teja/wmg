@@ -10,18 +10,17 @@ import { PrismaService } from '../../prisma/prisma.service';
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(createProductDto: CreateProductDto) {
     const slug = this.generateSlug(createProductDto.name);
-
     const existingSlug = await this.prisma.product.findUnique({
       where: { slug },
     });
-
     if (existingSlug) {
       throw new ConflictException('Product with this name already exists');
     }
 
-    const { images, colors, ...productData } = createProductDto;
+    const { images, colors, sizeStocks, ...productData } = createProductDto;
 
     return this.prisma.product.create({
       data: {
@@ -43,11 +42,18 @@ export class ProductsService {
               })),
             }
           : undefined,
+        sizeStocks: {
+          create: sizeStocks.map((s) => ({
+            size: s.size,
+            stock: s.stock,
+          })),
+        },
       },
       include: {
         images: true,
         colors: true,
         category: true,
+        sizeStocks: true,
       },
     });
   }
@@ -56,6 +62,7 @@ export class ProductsService {
     return this.prisma.product.findMany({
       include: {
         category: true,
+        sizeStocks: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -71,6 +78,7 @@ export class ProductsService {
         reviews: true,
         images: true,
         colors: true,
+        sizeStocks: true,
       },
     });
 
@@ -84,7 +92,7 @@ export class ProductsService {
   async update(id: string, updateProductDto: UpdateProductDto) {
     await this.findOne(id);
 
-    const { images, colors, ...productData } = updateProductDto;
+    const { images, colors, sizeStocks, ...productData } = updateProductDto;
 
     return this.prisma.product.update({
       where: { id },
@@ -95,6 +103,7 @@ export class ProductsService {
         images: true,
         colors: true,
         category: true,
+        sizeStocks: true,
       },
     });
   }
@@ -105,6 +114,7 @@ export class ProductsService {
       include: {
         category: true,
         reviews: true,
+        sizeStocks: true,
         images: {
           orderBy: { order: 'asc' },
         },

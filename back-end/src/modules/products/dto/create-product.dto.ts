@@ -10,6 +10,7 @@ import {
 import { Type } from 'class-transformer';
 import { CreateProductImageDto } from './cretae-product-image.dto';
 import { CreateProductColorDto } from './create-product-color.dto';
+import { CreateProductSizeStockDto } from './create-product-size-stock.dto';
 
 export class CreateProductDto {
   @IsString()
@@ -22,10 +23,6 @@ export class CreateProductDto {
   @Min(0)
   price!: number;
 
-  @IsNumber()
-  @Min(0)
-  stock!: number;
-
   @IsString()
   @IsOptional()
   imageUrl?: string;
@@ -34,9 +31,9 @@ export class CreateProductDto {
   categoryId!: string;
 
   @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  sizes?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductSizeStockDto)
+  sizeStocks!: CreateProductSizeStockDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

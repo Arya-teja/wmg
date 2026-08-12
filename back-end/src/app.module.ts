@@ -12,6 +12,7 @@ import { VouchersModule } from './modules/vouchers/vouchers.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatModule } from './modules/chat/chat.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ChatModule } from './modules/chat/chat.module';
     OrdersModule,
     ScheduleModule.forRoot(),
     ChatModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

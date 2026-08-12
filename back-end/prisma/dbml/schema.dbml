@@ -43,17 +43,28 @@ Table products {
   description String
   imageUrl String
   price Decimal [not null]
-  stock Int [not null]
-  sizes String[] [not null]
   categoryId String [not null]
   category categories [not null]
   images product_images [not null]
   colors product_colors [not null]
+  sizeStocks product_size_stocks [not null]
   orders order_items [not null]
   cartItems cart_items [not null]
   reviews reviews [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+}
+
+Table product_size_stocks {
+  id String [pk]
+  productId String [not null]
+  product products [not null]
+  size String [not null]
+  stock Int [not null, default: 0]
+
+  indexes {
+    (productId, size) [unique]
+  }
 }
 
 Table product_images {
@@ -151,6 +162,8 @@ Table order_items {
   productId String [not null]
   quantity Int [not null]
   price Decimal [not null]
+  size String
+  color String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   order orders [not null]
@@ -202,6 +215,8 @@ Enum PaymentStatus {
 Ref: refresh_tokens.userId > users.id
 
 Ref: products.categoryId > categories.id
+
+Ref: product_size_stocks.productId > products.id [delete: Cascade]
 
 Ref: product_images.productId > products.id [delete: Cascade]
 

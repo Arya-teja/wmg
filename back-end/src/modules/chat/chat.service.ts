@@ -16,9 +16,13 @@ export class ChatService {
 
   private readonly systemInstruction = `
 Kamu adalah asisten belanja untuk WMG (Where's My Grandma), toko streetwear bertema batik Nusantara.
-Tugas kamu: membantu pelanggan menentukan ukuran baju berdasarkan tinggi & berat badan, dan mengecek stok produk.
-Selalu jawab dalam Bahasa Indonesia, dengan nada ramah, santai, dan natural seperti staf toko - jangan kaku atau terasa seperti template.
-Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia untuk mengambil data yang akurat.
+Tugas kamu: membantu pelanggan menentukan ukuran baju berdasarkan tinggi & berat badan, memberi tahu daftar produk yang tersedia, dan mengecek stok produk.
+
+ATURAN PALING PENTING - WAJIB DIPATUHI:
+- JANGAN PERNAH mengarang atau menebak nama produk, deskripsi produk, jenis potongan/fit baju, bahan, atau detail apa pun tentang produk yang tidak kamu dapatkan dari function yang tersedia.
+- Kalau pengguna tanya "produk apa saja yang ada" atau semacamnya, WAJIB panggil function listProducts untuk dapat daftar produk yang BENAR-BENAR ada di database - JANGAN mengarang nama produk sendiri.
+- Kalau kamu tidak yakin atau tidak punya data pasti soal sesuatu (misal detail fit/potongan baju), katakan dengan jujur bahwa kamu tidak punya info itu, jangan mengarang jawaban supaya terdengar meyakinkan.
+- Selalu jawab dalam Bahasa Indonesia, dengan nada ramah, santai, dan natural seperti staf toko - jangan kaku atau terasa seperti template.
 `;
 
   private readonly recommendSizeFunction = {
@@ -52,6 +56,16 @@ Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia u
     },
   };
 
+  private readonly listProductsFunction = {
+    name: 'listProducts',
+    description:
+      'Mengambil daftar nama produk yang tersedia di katalog toko. Gunakan ini setiap kali pengguna bertanya tentang produk apa saja yang ada, rekomendasi produk, atau katalog secara umum.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {},
+    },
+  };
+
   private recommendSize(heightCm: number, weightKg: number) {
     // Logic sederhana berbasis tinggi & berat, bisa disesuaikan lagi nanti
     const bmi = weightKg / ((heightCm / 100) * (heightCm / 100));
@@ -68,6 +82,7 @@ Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia u
   private async checkProductStock(productName: string) {
     const product = await this.prisma.product.findFirst({
       where: { name: { contains: productName, mode: 'insensitive' } },
+      include: { sizeStocks: true },
     });
 
     if (!product) {
@@ -84,8 +99,22 @@ Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia u
     return {
       found: true,
       productName: product.name,
-      stock: product.stock,
-      availableSizes: product.sizes,
+      sizeStocks: product.sizeStocks.map((s) => ({
+        size: s.size,
+        stock: s.stock,
+      })),
+    };
+  }
+
+  private async listProducts() {
+    const products = await this.prisma.product.findMany({
+      select: { name: true },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      products: products.map((p) => p.name),
     };
   }
 
@@ -112,6 +141,7 @@ Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia u
             functionDeclarations: [
               this.recommendSizeFunction,
               this.checkProductStockFunction,
+              this.listProductsFunction,
             ],
           },
         ],
@@ -134,6 +164,8 @@ Jangan mengarang data stok atau ukuran - selalu gunakan function yang tersedia u
         );
       } else if (call.name === 'checkProductStock') {
         result = await this.checkProductStock(call.args!.productName as string);
+      } else if (call.name === 'listProducts') {
+        result = await this.listProducts();
       }
 
       contents.push(response.candidates![0].content!);

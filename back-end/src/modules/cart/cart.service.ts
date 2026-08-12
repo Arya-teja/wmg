@@ -44,6 +44,7 @@ export class CartService {
       where: { id: dto.productId },
       include: {
         colors: true,
+        sizeStocks: true,
       },
     });
 
@@ -51,18 +52,22 @@ export class CartService {
       throw new NotFoundException('Product not found');
     }
 
-    if (product.stock < dto.quantity) {
-      throw new BadRequestException('Insufficient stock');
-    }
-
     // Validasi: kalau produk punya varian sizes, size WAJIB dipilih
-    if (product.sizes.length > 0 && !dto.size) {
+    if (product.sizeStocks.length > 0 && !dto.size) {
       throw new BadRequestException('Please select a size');
     }
 
     // Validasi: kalau produk punya varian colors, color WAJIB dipilih
     if (product.colors.length > 0 && !dto.color) {
       throw new BadRequestException('Please select a color');
+    }
+
+    // Cek stok berdasarkan size yang dipilih
+    if (dto.size) {
+      const sizeStock = product.sizeStocks.find((s) => s.size === dto.size);
+      if (!sizeStock || sizeStock.stock < dto.quantity) {
+        throw new BadRequestException('Insufficient stock for this size');
+      }
     }
 
     const cart = await this.getOrCreateCart(userId);
@@ -103,8 +108,19 @@ export class CartService {
   async updateCartItem(userId: string, itemId: string, dto: UpdateCartItemDto) {
     const cartItem = await this.findCartItemOwnedByUser(userId, itemId);
 
-    if (cartItem.product.stock < dto.quantity) {
-      throw new BadRequestException('Insufficient stock');
+    if (cartItem.size) {
+      const sizeStock = await this.prisma.productSizeStock.findUnique({
+        where: {
+          productId_size: {
+            productId: cartItem.productId,
+            size: cartItem.size,
+          },
+        },
+      });
+
+      if (!sizeStock || sizeStock.stock < dto.quantity) {
+        throw new BadRequestException('Insufficient stock for this size');
+      }
     }
 
     return this.prisma.cartItem.update({
