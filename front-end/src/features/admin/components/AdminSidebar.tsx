@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   Store,
   LogOut,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/vouchers", label: "Vouchers", icon: TicketPercent },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/users", label: "Users", icon: Users },
 ];
 
 export function AdminSidebar() {
@@ -51,9 +53,7 @@ export function AdminSidebar() {
             <p className="font-heading text-sm font-semibold text-foreground">
               WMG Admin
             </p>
-            <p className="text-[11px] text-muted-foreground">
-              Panel Manajemen
-            </p>
+            <p className="text-[11px] text-muted-foreground">Panel Manajemen</p>
           </div>
         </Link>
       </div>
@@ -71,7 +71,7 @@ export function AdminSidebar() {
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <Icon className="size-4" />

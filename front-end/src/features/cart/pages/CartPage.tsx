@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
-import { formatPrice } from '@/types';
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { formatPrice } from "@/types";
 
 export default function CartPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function CartPage() {
           Belum ada produk yang ditambahkan ke keranjang.
         </p>
         <button
-          onClick={() => router.push('/catalog')}
+          onClick={() => router.push("/catalog")}
           className="px-8 py-3 bg-foreground text-background font-body text-[11px] tracking-[0.3em] uppercase border border-foreground hover:bg-background hover:text-foreground transition-colors duration-300"
         >
           Mulai Belanja
@@ -48,8 +48,11 @@ export default function CartPage() {
                 {/* Gambar */}
                 <div className="relative w-24 h-28 sm:w-28 sm:h-32 flex-shrink-0 bg-muted">
                   <Image
-                    src={item.product?.imageUrl || '/placeholder.jpg'} // <-- Diubah
-                    alt={item.product?.name || 'Gambar Produk'} // <-- INI YANG BIKIN ERROR SEBELUMNYA
+                    src={
+                      item.product?.images?.[0]?.url ||
+                      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60"
+                    }
+                    alt={item.product?.name || "Gambar Produk"}
                     fill
                     className="object-cover"
                   />
@@ -64,7 +67,7 @@ export default function CartPage() {
                       </h3>
                       {(item.size || item.color) && (
                         <p className="font-body text-[11px] text-muted-foreground mt-1">
-                          {[item.size, item.color].filter(Boolean).join(' · ')}
+                          {[item.size, item.color].filter(Boolean).join(" · ")}
                         </p>
                       )}
                     </div>
@@ -81,8 +84,12 @@ export default function CartPage() {
                     {/* Quantity */}
                     <div className="inline-flex items-center border border-border">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.id, Math.max(1, item.quantity - 1)) // <-- Diubah
+                        onClick={
+                          () =>
+                            updateQuantity(
+                              item.id,
+                              Math.max(1, item.quantity - 1),
+                            ) // <-- Diubah
                         }
                         className="w-8 h-8 flex items-center justify-center hover:bg-foreground hover:text-background transition-colors"
                       >
@@ -92,7 +99,9 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)} // <-- Diubah
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        } // <-- Diubah
                         className="w-8 h-8 flex items-center justify-center hover:bg-foreground hover:text-background transition-colors"
                       >
                         <Plus className="w-3 h-3" />
@@ -101,7 +110,10 @@ export default function CartPage() {
 
                     {/* Harga */}
                     <p className="font-body text-sm font-medium text-foreground">
-                      {formatPrice(Number(item.product?.price || 0) * item.quantity)} {/* <-- Diubah */}
+                      {formatPrice(
+                        Number(item.product?.price || 0) * item.quantity,
+                      )}{" "}
+                      {/* <-- Diubah */}
                     </p>
                   </div>
                 </div>
@@ -125,7 +137,7 @@ export default function CartPage() {
             </div>
 
             <button
-              onClick={() => router.push('/checkout')}
+              onClick={() => router.push("/checkout")}
               className="w-full py-4 bg-foreground text-background font-body text-[11px] tracking-[0.3em] uppercase border border-foreground hover:bg-background hover:text-foreground transition-colors duration-300"
             >
               Lanjut ke Pembayaran

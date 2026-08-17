@@ -24,7 +24,8 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [voucherCode, setVoucherCode] = useState("");
-  const [appliedVoucher, setAppliedVoucher] = useState<ValidateVoucherResponse | null>(null);
+  const [appliedVoucher, setAppliedVoucher] =
+    useState<ValidateVoucherResponse | null>(null);
   const [voucherError, setVoucherError] = useState("");
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false);
 
@@ -234,7 +235,10 @@ export default function CheckoutPage() {
                   <div key={item.id} className="flex gap-4">
                     <div className="relative w-16 h-20 flex-shrink-0 bg-muted">
                       <Image
-                        src={item.product?.imageUrl || "/placeholder.jpg"}
+                        src={
+                          item.product?.images?.[0]?.url ||
+                          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60"
+                        }
                         alt={item.product?.name || "Gambar Produk"}
                         fill
                         className="object-cover"
@@ -337,8 +341,8 @@ export default function CheckoutPage() {
                         ) : eligibleVouchers.length === 0 ? (
                           <div className="px-4 py-3">
                             <p className="font-body text-xs text-muted-foreground">
-                              Belum ada voucher yang bisa digunakan untuk belanja
-                              ini
+                              Belum ada voucher yang bisa digunakan untuk
+                              belanja ini
                             </p>
                           </div>
                         ) : (
@@ -347,7 +351,9 @@ export default function CheckoutPage() {
                               <button
                                 key={voucher.id}
                                 type="button"
-                                onClick={() => handleSelectVoucher(voucher.code)}
+                                onClick={() =>
+                                  handleSelectVoucher(voucher.code)
+                                }
                                 className="w-full text-left px-4 py-3 hover:bg-muted transition-colors"
                               >
                                 <p className="font-body text-xs font-medium text-foreground">

@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, ShoppingBag } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { LoginFormData, LoginFormErrors } from "@/features/auth/types/auth";
+import { decodeJwtPayload } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 export function LoginForm() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -51,7 +54,15 @@ export function LoginForm() {
       const response = await authService.login(formData);
       localStorage.setItem("accessToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
-      router.push("/");
+
+      await refreshUser();
+
+      const payload = decodeJwtPayload(response.accessToken);
+      if (payload?.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
       router.refresh();
     } catch (err: any) {
       const message =
@@ -143,7 +154,7 @@ export function LoginForm() {
                 Password
               </label>
               <a
-                href="#"
+                href="/forgot-password"
                 className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 Lupa password?

@@ -4,6 +4,10 @@ export class CreateProductImageDto {
   @IsString()
   url!: string;
 
+  @IsString()
+  @IsOptional()
+  publicId?: string;
+
   @IsInt()
   @Min(0)
   @IsOptional()

@@ -6,7 +6,9 @@ import { Readable } from 'stream';
 export class UploadService {
   constructor(@Inject('CLOUDINARY') private readonly cloudinaryConfig: any) {}
 
-  async uploadImage(file: Express.Multer.File): Promise<{ url: string }> {
+  async uploadImage(
+    file: Express.Multer.File,
+  ): Promise<{ url: string; publicId: string }> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: 'wmg-products' },
@@ -15,11 +17,23 @@ export class UploadService {
             console.error('Error dari Cloudinary:', error);
             return reject(error);
           }
-          resolve({ url: result.secure_url });
+          resolve({ url: result.secure_url, publicId: result.public_id });
         },
       );
-
       Readable.from(file.buffer).pipe(uploadStream);
     });
+  }
+
+  async deleteImage(publicId: string): Promise<void> {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      // Log tapi jangan throw — kalau gagal hapus di Cloudinary,
+      // proses update produk di DB tetap harus lanjut
+      console.error(
+        `Gagal hapus image Cloudinary (publicId: ${publicId}):`,
+        error,
+      );
+    }
   }
 }

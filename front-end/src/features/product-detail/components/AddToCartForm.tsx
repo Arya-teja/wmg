@@ -19,8 +19,8 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
 
   const validateSelection = (): boolean => {
-    if (product.sizes?.length > 0 && !selectedSize) {
-      toast.error("Pilih ukuran terlebih dahulu"); // BERUBAH DI SINI
+    if (product.sizeStocks?.length > 0 && !selectedSize) {
+      toast.error("Pilih ukuran terlebih dahulu");
       return false;
     }
     if (product.colors?.length > 0 && !selectedColor) {
@@ -32,46 +32,63 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
 
   const handleAddToCart = async () => {
     if (!validateSelection()) return;
-    await addItem({
-      productId: product.id,
-      quantity: quantity,
-      size: selectedSize || undefined,
-      color: selectedColor || undefined,
-    });
-    toast.success(`${product.name} ditambahkan ke keranjang`);
+    try {
+      await addItem({
+        productId: product.id,
+        quantity: quantity,
+        size: selectedSize || undefined,
+        color: selectedColor || undefined,
+      });
+      toast.success(`${product.name} ditambahkan ke keranjang`);
+    } catch (err) {
+      const message =
+        (err as any)?.response?.data?.message ||
+        "Gagal menambahkan ke keranjang. Silakan coba lagi.";
+      toast.error(message);
+    }
   };
 
   const handleBuyNow = async () => {
     if (!validateSelection()) return;
-    await addItem({
-      productId: product.id,
-      quantity: quantity,
-      size: selectedSize || undefined,
-      color: selectedColor || undefined,
-    });
-    router.push("/cart");
+    try {
+      await addItem({
+        productId: product.id,
+        quantity: quantity,
+        size: selectedSize || undefined,
+        color: selectedColor || undefined,
+      });
+      router.push("/cart");
+    } catch (err) {
+      const message =
+        (err as any)?.response?.data?.message ||
+        "Gagal memproses pesanan. Silakan coba lagi.";
+      toast.error(message);
+    }
   };
 
   return (
     <div className="mt-8">
       {/* Size Selector */}
-      {product.sizes?.length > 0 && (
+      {product.sizeStocks?.length > 0 && (
         <div className="mb-8">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-foreground mb-4">
             Ukuran
           </p>
           <div className="grid grid-cols-5 gap-2">
-            {product.sizes.map((s: string) => (
+            {product.sizeStocks.map((s) => (
               <button
-                key={s}
-                onClick={() => setSelectedSize(s)}
+                key={s.size}
+                onClick={() => s.stock > 0 && setSelectedSize(s.size)}
+                disabled={s.stock <= 0}
                 className={`py-3 font-body text-[11px] tracking-[0.15em] uppercase border transition-all ${
-                  selectedSize === s
+                  selectedSize === s.size
                     ? "bg-foreground text-background border-foreground"
-                    : "border-border hover:border-foreground"
+                    : s.stock <= 0
+                      ? "border-border text-muted-foreground cursor-not-allowed opacity-50"
+                      : "border-border hover:border-foreground"
                 }`}
               >
-                {s}
+                {s.size}
               </button>
             ))}
           </div>

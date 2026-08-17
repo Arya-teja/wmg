@@ -34,7 +34,10 @@ export function ProductTable({
     return (
       <div className="space-y-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-14 bg-muted animate-pulse border border-border" />
+          <div
+            key={i}
+            className="h-14 bg-muted animate-pulse border border-border"
+          />
         ))}
       </div>
     );
@@ -79,7 +82,9 @@ export function ProductTable({
                   {product.name}
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant="secondary">{product.category?.name ?? "-"}</Badge>
+                  <Badge variant="secondary">
+                    {product.category?.name ?? "-"}
+                  </Badge>
                 </td>
                 <td className="px-4 py-3 text-foreground">
                   {formatPrice(Number(product.price))}
@@ -87,17 +92,25 @@ export function ProductTable({
                 <td className="px-4 py-3">
                   <span
                     className={
-                      product.stock <= 0
+                      (product.sizeStocks?.reduce(
+                        (a, b) => a + (b.stock ?? 0),
+                        0,
+                      ) ?? 0) <= 0
                         ? "text-destructive font-medium"
                         : "text-foreground"
                     }
                   >
-                    {product.stock}
+                    {product.sizeStocks && product.sizeStocks.length > 0
+                      ? product.sizeStocks.reduce(
+                          (a, b) => a + (b.stock ?? 0),
+                          0,
+                        )
+                      : 0}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {product.sizes.length > 0
-                    ? product.sizes.join(", ")
+                  {product.sizeStocks && product.sizeStocks.length > 0
+                    ? product.sizeStocks.map((s) => s.size).join(", ")
                     : "-"}
                 </td>
                 <td className="px-4 py-3">

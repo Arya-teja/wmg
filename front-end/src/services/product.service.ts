@@ -1,14 +1,15 @@
 import api from "../lib/axios";
 import { Product } from "../types";
+import { ProductLabel } from "../types";
 
 export interface CreateProductPayload {
   name: string;
   description: string;
   price: number;
-  stock: number;
   categoryId: string;
-  sizes?: string[];
-  images?: { url: string; order?: number }[];
+  label?: ProductLabel;
+  sizeStocks: { size: string; stock: number }[];
+  images?: { url: string; publicId?: string; order?: number }[];
   colors?: { name: string; hex: string }[];
 }
 
@@ -37,7 +38,7 @@ export const productService = {
 
   async updateProduct(
     id: string,
-    payload: UpdateProductPayload
+    payload: UpdateProductPayload,
   ): Promise<Product> {
     const response = await api.patch<Product>(`/products/${id}`, payload);
     return response.data;

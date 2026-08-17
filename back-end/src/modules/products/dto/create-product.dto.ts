@@ -6,8 +6,10 @@ import {
   IsUUID,
   IsArray,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ProductLabel } from '@prisma/client';
 import { CreateProductImageDto } from './cretae-product-image.dto';
 import { CreateProductColorDto } from './create-product-color.dto';
 import { CreateProductSizeStockDto } from './create-product-size-stock.dto';
@@ -26,6 +28,10 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @IsEnum(ProductLabel)
+  @IsOptional()
+  label?: ProductLabel;
 
   @IsUUID()
   categoryId!: string;

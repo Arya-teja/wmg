@@ -76,7 +76,7 @@ export default function ChatWidget() {
           role: "model",
           content: getErrorMessage(
             err,
-            "Maaf, terjadi kendala saat menghubungi asisten. Silakan coba lagi."
+            "Maaf, terjadi kendala saat menghubungi asisten. Silakan coba lagi.",
           ),
           isError: true,
         },
@@ -94,7 +94,7 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {/* Panel Chat */}
       <div
         role="dialog"
@@ -106,7 +106,7 @@ export default function ChatWidget() {
           "h-[70vh] max-h-[500px] sm:h-[500px]",
           isOpen
             ? "pointer-events-auto scale-100 opacity-100 translate-y-0"
-            : "pointer-events-none scale-95 opacity-0 translate-y-4"
+            : "pointer-events-none scale-95 opacity-0 translate-y-4",
         )}
       >
         {/* Header */}
@@ -141,8 +141,8 @@ export default function ChatWidget() {
         >
           {messages.length === 0 && (
             <div className="font-body text-sm text-muted-foreground">
-              Halo! Ada yang bisa dibantu seputar produk atau pesanan WMG
-              hari ini?
+              Halo! Ada yang bisa dibantu seputar produk atau pesanan WMG hari
+              ini?
             </div>
           )}
 
@@ -151,7 +151,7 @@ export default function ChatWidget() {
               key={msg.id}
               className={cn(
                 "flex w-full",
-                msg.role === "user" ? "justify-end" : "justify-start"
+                msg.role === "user" ? "justify-end" : "justify-start",
               )}
             >
               <div
@@ -160,8 +160,8 @@ export default function ChatWidget() {
                   msg.role === "user"
                     ? "rounded-br-sm bg-primary text-primary-foreground"
                     : msg.isError
-                    ? "rounded-bl-sm bg-destructive/10 text-destructive"
-                    : "rounded-bl-sm bg-batik-cream text-batik-brown"
+                      ? "rounded-bl-sm bg-destructive/10 text-destructive"
+                      : "rounded-bl-sm bg-batik-cream text-batik-brown",
                 )}
               >
                 {msg.content}
@@ -214,7 +214,7 @@ export default function ChatWidget() {
         aria-label={isOpen ? "Tutup WMG Assistant" : "Buka WMG Assistant"}
         aria-expanded={isOpen}
         onClick={handleToggle}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-all duration-300 hover:bg-primary/90 hover:scale-105 active:scale-95"
+        className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-all duration-300 hover:bg-primary/90 hover:scale-105 active:scale-95"
       >
         <span className="relative flex h-6 w-6 items-center justify-center">
           <MessageCircle
@@ -222,7 +222,7 @@ export default function ChatWidget() {
               "absolute h-6 w-6 transition-all duration-300",
               isOpen
                 ? "scale-0 opacity-0 rotate-45"
-                : "scale-100 opacity-100 rotate-0"
+                : "scale-100 opacity-100 rotate-0",
             )}
           />
           <X
@@ -230,7 +230,7 @@ export default function ChatWidget() {
               "absolute h-6 w-6 transition-all duration-300",
               isOpen
                 ? "scale-100 opacity-100 rotate-0"
-                : "scale-0 opacity-0 -rotate-45"
+                : "scale-0 opacity-0 -rotate-45",
             )}
           />
         </span>

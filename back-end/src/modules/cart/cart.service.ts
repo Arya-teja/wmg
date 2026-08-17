@@ -7,6 +7,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
+const PRODUCT_INCLUDE = {
+  images: { orderBy: { order: 'asc' as const } },
+  colors: true,
+  sizeStocks: true,
+};
+
 @Injectable()
 export class CartService {
   constructor(private readonly prisma: PrismaService) {}
@@ -17,20 +23,19 @@ export class CartService {
       include: {
         items: {
           include: {
-            product: true,
+            product: { include: PRODUCT_INCLUDE },
           },
         },
       },
     });
 
-    // If the cart does not exist, create a new one
     if (!cart) {
       cart = await this.prisma.cart.create({
         data: { userId },
         include: {
           items: {
             include: {
-              product: true,
+              product: { include: PRODUCT_INCLUDE },
             },
           },
         },
@@ -52,17 +57,14 @@ export class CartService {
       throw new NotFoundException('Product not found');
     }
 
-    // Validasi: kalau produk punya varian sizes, size WAJIB dipilih
     if (product.sizeStocks.length > 0 && !dto.size) {
       throw new BadRequestException('Please select a size');
     }
 
-    // Validasi: kalau produk punya varian colors, color WAJIB dipilih
     if (product.colors.length > 0 && !dto.color) {
       throw new BadRequestException('Please select a color');
     }
 
-    // Cek stok berdasarkan size yang dipilih
     if (dto.size) {
       const sizeStock = product.sizeStocks.find((s) => s.size === dto.size);
       if (!sizeStock || sizeStock.stock < dto.quantity) {
@@ -83,17 +85,18 @@ export class CartService {
       },
     });
 
-    //kalau cart item sudah ada, maka update quantity
     if (existingCartItem) {
       return this.prisma.cartItem.update({
         where: { id: existingCartItem.id },
         data: {
           quantity: existingCartItem.quantity + dto.quantity,
         },
+        include: {
+          product: { include: PRODUCT_INCLUDE },
+        },
       });
     }
 
-    //kalau cart item belum ada, maka buat baru
     return this.prisma.cartItem.create({
       data: {
         cartId: cart.id,
@@ -101,6 +104,9 @@ export class CartService {
         quantity: dto.quantity,
         size: dto.size,
         color: dto.color,
+      },
+      include: {
+        product: { include: PRODUCT_INCLUDE },
       },
     });
   }
@@ -129,7 +135,7 @@ export class CartService {
         quantity: dto.quantity,
       },
       include: {
-        product: true,
+        product: { include: PRODUCT_INCLUDE },
       },
     });
   }
@@ -141,7 +147,7 @@ export class CartService {
       where: { id: itemId },
     });
   }
-  //  buat function untuk ngecek apakah cart ada atau tidak, kalau tidak ada maka buat baru
+
   private async getOrCreateCart(userId: string) {
     let cart = await this.prisma.cart.findUnique({ where: { userId } });
 
@@ -152,7 +158,6 @@ export class CartService {
     return cart;
   }
 
-  //buat function untuk ngecek apakah cart item ada atau tidak, kalau tidak ada maka throw error
   private async findCartItemOwnedByUser(userId: string, itemId: string) {
     const cartItem = await this.prisma.cartItem.findUnique({
       where: {

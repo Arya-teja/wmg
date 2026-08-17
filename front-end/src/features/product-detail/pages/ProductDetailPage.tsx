@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { productService } from '@/services/product.service';
-import { Product, formatPrice } from '@/types';
-import ProductGallery from '@/features/product-detail/components/ProductGallery';
-import AddToCartForm from '@/features/product-detail/components/AddToCartForm';
-import BatikSVGPattern from '@/components/decorative/BatikSVGPattern';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { productService } from "@/services/product.service";
+import { Product, formatPrice } from "@/types";
+import ProductGallery from "@/features/product-detail/components/ProductGallery";
+import AddToCartForm from "@/features/product-detail/components/AddToCartForm";
+import BatikSVGPattern from "@/components/decorative/BatikSVGPattern";
 
 interface ProductDetailPageProps {
   slug: string;
@@ -28,8 +28,8 @@ export default function ProductDetailPage({ slug }: ProductDetailPageProps) {
         const data = await productService.getBySlug(slug);
         setProduct(data);
       } catch (err) {
-        console.error('Error loading product detail:', err);
-        setError('Gagal memuat detail produk. Silakan coba lagi.');
+        console.error("Error loading product detail:", err);
+        setError("Gagal memuat detail produk. Silakan coba lagi.");
       } finally {
         setIsLoading(false);
       }
@@ -52,7 +52,7 @@ export default function ProductDetailPage({ slug }: ProductDetailPageProps) {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-red-500 font-body text-sm tracking-[0.2em] uppercase mb-4">
-            {error || 'Produk tidak ditemukan.'}
+            {error || "Produk tidak ditemukan."}
           </p>
           <div className="flex gap-4 justify-center">
             <button
@@ -91,14 +91,21 @@ export default function ProductDetailPage({ slug }: ProductDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
           {/* Gallery - Left Side */}
           <div className="lg:col-span-7">
-            <ProductGallery images={product.images} imageUrl={product.imageUrl ?? undefined} productName={product.name} />
+            <ProductGallery
+              images={product.images}
+              imageUrl={product.imageUrl ?? undefined}
+              productName={product.name}
+            />
           </div>
 
           {/* Product Info - Right Side */}
           <div className="lg:col-span-5 flex flex-col">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 font-body text-[10px] tracking-[0.3em] uppercase text-muted-foreground mb-6">
-              <Link href="/catalog" className="hover:text-foreground transition-colors">
+              <Link
+                href="/catalog"
+                className="hover:text-foreground transition-colors"
+              >
                 Katalog
               </Link>
               <span>/</span>
@@ -114,15 +121,22 @@ export default function ProductDetailPage({ slug }: ProductDetailPageProps) {
                 <p className="font-heading text-2xl md:text-3xl text-foreground">
                   {formatPrice(product.price)}
                 </p>
-                {product.stock > 0 ? (
-                  <span className="font-body text-[9px] tracking-[0.3em] uppercase text-muted-foreground">
-                    Stok: {product.stock}
-                  </span>
-                ) : (
-                  <span className="font-body text-[9px] tracking-[0.3em] uppercase text-red-500">
-                    Habis
-                  </span>
-                )}
+                {(() => {
+                  const totalStock =
+                    product.sizeStocks?.reduce(
+                      (a, b) => a + (b.stock ?? 0),
+                      0,
+                    ) ?? 0;
+                  return totalStock > 0 ? (
+                    <span className="font-body text-[9px] tracking-[0.3em] uppercase text-muted-foreground">
+                      Stok: {totalStock}
+                    </span>
+                  ) : (
+                    <span className="font-body text-[9px] tracking-[0.3em] uppercase text-red-500">
+                      Habis
+                    </span>
+                  );
+                })()}
               </div>
             </div>
 
@@ -154,7 +168,10 @@ export default function ProductDetailPage({ slug }: ProductDetailPageProps) {
 
       {/* Batik Ornament Footer */}
       <div className="relative h-32 md:h-48 overflow-hidden bg-secondary/30">
-        <BatikSVGPattern className="absolute inset-0 w-full h-full text-batik-gold" opacity={0.15} />
+        <BatikSVGPattern
+          className="absolute inset-0 w-full h-full text-batik-gold"
+          opacity={0.15}
+        />
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="font-heading italic text-lg md:text-2xl text-muted-foreground/40 tracking-wider">
             &ldquo;Warisan yang dikenakan, bukan dipajang.&rdquo;

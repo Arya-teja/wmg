@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Search, Menu, X, FileText } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+
 export default function Navbar() {
   const { totalItems, lastAddedAnimation } = useCart();
   const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +35,6 @@ export default function Navbar() {
     { href: "/", label: "Beranda" },
     { href: "/catalog", label: "Katalog" },
     { href: "/orders", label: "Pesanan Saya" },
-    { href: "/transactions", label: "Transaksi" },
-    { href: "/review", label: "Review" },
   ];
 
   return (
@@ -69,12 +68,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
+          {/* <button
             aria-label="Cari"
             className="p-2 hover:text-accent transition-colors"
           >
             <Search className="w-5 h-5" />
-          </button>
+          </button> */}
           <Link
             href="/cart"
             aria-label="Keranjang"
@@ -97,11 +96,11 @@ export default function Navbar() {
             )}
           </Link>
           <Link
-            href="/transactions"
-            aria-label="Transaksi"
+            href="/profile"
+            aria-label="Profil Saya"
             className="hidden md:block p-2 hover:text-accent transition-colors"
           >
-            <FileText className="w-5 h-5" />
+            <User className="w-5 h-5" />
           </Link>
           <button
             aria-label={isOpen ? "Tutup menu" : "Buka menu"}
@@ -127,6 +126,14 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              href="/profile"
+              className={`text-sm font-body font-medium tracking-wide uppercase py-2 ${
+                pathname === "/profile" ? "text-accent" : "text-foreground"
+              }`}
+            >
+              Profil Saya
+            </Link>
           </div>
         </div>
       )}

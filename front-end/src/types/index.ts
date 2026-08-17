@@ -19,6 +19,7 @@ export interface ApiError {
 export interface ProductImage {
   id: string;
   url: string;
+  publicId?: string | null;
   order: number;
 }
 
@@ -28,18 +29,19 @@ export interface ProductColor {
   hex: string;
 }
 
+export type ProductLabel = "BEST_SELLER" | "NEW_ARRIVAL";
+
 export interface Product {
   id: string;
   name: string;
   slug: string;
   description: string;
   price: number;
-  stock: number;
   imageUrl: string | null;
   categoryId: string;
   category?: { id: string; name: string; slug: string };
-  label?: string;
-  sizes: string[];
+  label?: ProductLabel | null;
+  sizeStocks: { id: string; size: string; stock: number }[];
   images: ProductImage[];
   colors: ProductColor[];
 }
@@ -84,6 +86,7 @@ export interface OrderItem {
     name: string;
     slug: string;
     imageUrl: string | null;
+    images: ProductImage[];
   };
 }
 

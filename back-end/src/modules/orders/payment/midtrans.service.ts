@@ -6,11 +6,6 @@ export class MidtransService {
   private snap: Midtrans.Snap;
 
   constructor() {
-    console.log('isProduction:', process.env.MIDTRANS_IS_PRODUCTION === 'true');
-    console.log(
-      'Server Key (partial):',
-      process.env.MIDTRANS_SERVER_KEY?.slice(0, 15),
-    );
     this.snap = new Midtrans.Snap({
       isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
       serverKey: process.env.MIDTRANS_SERVER_KEY!,
@@ -35,6 +30,9 @@ export class MidtransService {
         email: params.customerEmail,
       },
       item_details: params.items,
+      callbacks: {
+        finish: `${process.env.FRONTEND_URL}/orders/${params.orderId}`,
+      },
     } as any);
 
     return transaction;
