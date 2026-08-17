@@ -38,10 +38,14 @@ export default function AdminCategoriesPage() {
     setReloadKey((prev) => prev + 1);
   };
 
-  const handleCreate = async (name: string) => {
+  const handleCreate = async (
+    name: string,
+    imageUrl?: string,
+    publicId?: string,
+  ) => {
     setIsSaving(true);
     try {
-      await categoryService.create({ name });
+      await categoryService.create({ name, imageUrl, publicId });
       toast.success("Kategori berhasil dibuat");
       reload();
     } catch (err) {
@@ -52,10 +56,15 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleUpdate = async (id: string, name: string) => {
+  const handleUpdate = async (
+    id: string,
+    name: string,
+    imageUrl?: string,
+    publicId?: string,
+  ) => {
     setIsSaving(true);
     try {
-      await categoryService.update(id, { name });
+      await categoryService.update(id, { name, imageUrl, publicId });
       toast.success("Kategori berhasil diperbarui");
       reload();
     } catch (err) {

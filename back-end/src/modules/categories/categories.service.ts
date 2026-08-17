@@ -6,10 +6,14 @@ import {
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
     //ubah nama kategori menjadi slug
@@ -41,11 +45,24 @@ export class CategoriesService {
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    await this.findOne(id);
-    return this.prisma.category.update({
+    const category = await this.findOne(id);
+
+    const incomingPublicId = updateCategoryDto.publicId;
+    const shouldDeleteOldImage =
+      incomingPublicId !== undefined &&
+      !!category.publicId &&
+      category.publicId !== incomingPublicId;
+
+    const updatedCategory = await this.prisma.category.update({
       where: { id },
       data: updateCategoryDto,
     });
+
+    if (shouldDeleteOldImage) {
+      await this.uploadService.deleteImage(category.publicId!);
+    }
+
+    return updatedCategory;
   }
 
   async remove(id: string) {

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { Pencil, Trash2, Plus, Loader2, Tags } from "lucide-react";
+import { Pencil, Trash2, Plus, Loader2, Tags, ImageIcon, X } from "lucide-react";
+import { toast } from "sonner";
 import { Category } from "@/services/category.service";
+import { uploadService } from "@/services/upload.service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getErrorMessage } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +24,21 @@ interface CategoryListProps {
   isLoading: boolean;
   isSaving: boolean;
   isDeleting: boolean;
-  onCreate: (name: string) => Promise<void>;
-  onUpdate: (id: string, name: string) => Promise<void>;
+  onCreate: (name: string, imageUrl?: string, publicId?: string) => Promise<void>;
+  onUpdate: (
+    id: string,
+    name: string,
+    imageUrl?: string,
+    publicId?: string,
+  ) => Promise<void>;
   onDelete: (id: string) => void;
+}
+
+interface CategoryImageState {
+  url?: string;
+  publicId?: string;
+  localUrl?: string;
+  uploading: boolean;
 }
 
 export function CategoryList({
@@ -39,6 +54,8 @@ export function CategoryList({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
+  const [image, setImage] = useState<CategoryImageState>({ uploading: false });
+  const [imageError, setImageError] = useState("");
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null
   );
@@ -49,6 +66,8 @@ export function CategoryList({
     setEditingCategory(null);
     setName("");
     setNameError("");
+    setImage({ uploading: false });
+    setImageError("");
     setFormOpen(true);
   };
 
@@ -56,6 +75,12 @@ export function CategoryList({
     setEditingCategory(category);
     setName(category.name);
     setNameError("");
+    setImage({
+      url: category.imageUrl ?? undefined,
+      publicId: category.publicId ?? undefined,
+      uploading: false,
+    });
+    setImageError("");
     setFormOpen(true);
   };
 
@@ -65,6 +90,33 @@ export function CategoryList({
     setEditingCategory(null);
     setName("");
     setNameError("");
+    setImage({ uploading: false });
+    setImageError("");
+  };
+
+  const handleImageSelected = async (file: File | undefined) => {
+    if (!file) return;
+
+    const localUrl = URL.createObjectURL(file);
+    setImage({ localUrl, uploading: true });
+    setImageError("");
+
+    try {
+      const uploadedImage = await uploadService.uploadImage(file);
+      setImage({
+        url: uploadedImage.url,
+        publicId: uploadedImage.publicId,
+        uploading: false,
+      });
+    } catch (err) {
+      setImage({ uploading: false });
+      toast.error(getErrorMessage(err, "Gagal mengunggah gambar kategori"));
+    }
+  };
+
+  const clearImage = () => {
+    setImage({ uploading: false });
+    setImageError("");
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -74,17 +126,23 @@ export function CategoryList({
       setNameError("Nama kategori wajib diisi");
       return;
     }
+    if (image.uploading) {
+      setImageError("Tunggu gambar selesai diunggah");
+      return;
+    }
     try {
       if (isEdit && editingCategory) {
-        await onUpdate(editingCategory.id, trimmed);
+        await onUpdate(editingCategory.id, trimmed, image.url, image.publicId);
       } else {
-        await onCreate(trimmed);
+        await onCreate(trimmed, image.url, image.publicId);
       }
       // Tutup modal langsung (tanpa guard isSaving yang masih true saat ini)
       setFormOpen(false);
       setEditingCategory(null);
       setName("");
       setNameError("");
+      setImage({ uploading: false });
+      setImageError("");
     } catch {
       // Pesan error ditampilkan oleh parent (toast)
     }
@@ -130,6 +188,7 @@ export function CategoryList({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3 font-medium">Gambar</th>
               <th className="px-4 py-3 font-medium">Nama</th>
               <th className="px-4 py-3 font-medium">Slug</th>
               <th className="px-4 py-3 font-medium text-right">Aksi</th>
@@ -141,6 +200,19 @@ export function CategoryList({
                 key={category.id}
                 className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
               >
+                <td className="px-4 py-3">
+                  {category.imageUrl ? (
+                    <img
+                      src={category.imageUrl}
+                      alt={`Gambar ${category.name}`}
+                      className="h-10 w-10 rounded object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded border border-dashed border-border bg-muted/40 flex items-center justify-center">
+                      <ImageIcon className="size-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-3 font-medium text-foreground">
                   {category.name}
                 </td>
@@ -192,7 +264,64 @@ export function CategoryList({
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} noValidate>
-            <div>
+            <div className="space-y-4">
+              <div>
+                <Label>Gambar Kategori (opsional)</Label>
+                <div className="mt-1.5 flex items-start gap-3">
+                  <div className="h-24 w-24 rounded-lg border border-border bg-muted/30 overflow-hidden flex items-center justify-center">
+                    {image.localUrl || image.url ? (
+                      <img
+                        src={image.localUrl ?? image.url}
+                        alt="Preview kategori"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="size-6 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Input
+                      id="category-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        void handleImageSelected(e.target.files?.[0]);
+                        e.currentTarget.value = "";
+                      }}
+                      disabled={isSaving || image.uploading}
+                    />
+
+                    <div className="flex items-center gap-2">
+                      {image.uploading && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <Loader2 className="size-3.5 animate-spin" />
+                          Mengunggah gambar...
+                        </span>
+                      )}
+
+                      {(image.localUrl || image.url) && !image.uploading && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={clearImage}
+                          disabled={isSaving}
+                        >
+                          <X />
+                          Hapus Gambar
+                        </Button>
+                      )}
+                    </div>
+
+                    {imageError && (
+                      <p className="text-sm text-destructive">{imageError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
               <Label htmlFor="category-name">Nama Kategori</Label>
               <Input
                 id="category-name"
@@ -209,6 +338,7 @@ export function CategoryList({
               {nameError && (
                 <p className="mt-1.5 text-sm text-destructive">{nameError}</p>
               )}
+            </div>
             </div>
             <DialogFooter className="mt-6">
               <Button

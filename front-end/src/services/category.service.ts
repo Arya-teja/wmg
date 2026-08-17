@@ -4,12 +4,16 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  imageUrl?: string | null;
+  publicId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCategoryPayload {
   name: string;
+  imageUrl?: string;
+  publicId?: string;
 }
 
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
@@ -32,7 +36,7 @@ export const categoryService = {
 
   async update(
     id: string,
-    payload: UpdateCategoryPayload
+    payload: UpdateCategoryPayload,
   ): Promise<Category> {
     const response = await api.patch<Category>(`/categories/${id}`, payload);
     return response.data;

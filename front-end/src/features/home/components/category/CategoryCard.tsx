@@ -5,9 +5,10 @@ import { useInView } from "@/hooks/useInView";
 interface CategoryCardProps {
   name: string;
   image: string;
+  href: string;
 }
 
-export default function CategoryCard({ name, image }: CategoryCardProps) {
+export default function CategoryCard({ name, image, href }: CategoryCardProps) {
   const { ref, isInView } = useInView();
 
   return (
@@ -18,7 +19,7 @@ export default function CategoryCard({ name, image }: CategoryCardProps) {
       }`}
     >
       <Link
-        href="/catalog"
+        href={href}
         className="group relative block aspect-3/4 overflow-hidden rounded"
       >
         <Image
