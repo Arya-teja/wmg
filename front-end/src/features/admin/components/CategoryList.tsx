@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { Pencil, Trash2, Plus, Loader2, Tags, ImageIcon, X } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Plus,
+  Loader2,
+  Tags,
+  ImageIcon,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Category } from "@/services/category.service";
 import { uploadService } from "@/services/upload.service";
@@ -24,7 +32,11 @@ interface CategoryListProps {
   isLoading: boolean;
   isSaving: boolean;
   isDeleting: boolean;
-  onCreate: (name: string, imageUrl?: string, publicId?: string) => Promise<void>;
+  onCreate: (
+    name: string,
+    imageUrl?: string,
+    publicId?: string,
+  ) => Promise<void>;
   onUpdate: (
     id: string,
     name: string,
@@ -57,7 +69,7 @@ export function CategoryList({
   const [image, setImage] = useState<CategoryImageState>({ uploading: false });
   const [imageError, setImageError] = useState("");
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
+    null,
   );
 
   const isEdit = !!editingCategory;
@@ -136,7 +148,6 @@ export function CategoryList({
       } else {
         await onCreate(trimmed, image.url, image.publicId);
       }
-      // Tutup modal langsung (tanpa guard isSaving yang masih true saat ini)
       setFormOpen(false);
       setEditingCategory(null);
       setName("");
@@ -161,21 +172,6 @@ export function CategoryList({
     );
   }
 
-  if (categories.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 border border-border rounded-lg bg-card">
-        <Tags className="size-10 text-muted-foreground mb-4" />
-        <p className="text-sm text-muted-foreground mb-4">
-          Belum ada kategori.
-        </p>
-        <Button onClick={openCreateDialog}>
-          <Plus />
-          Tambah Kategori
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="flex items-center justify-end mb-3">
@@ -184,66 +180,80 @@ export function CategoryList({
           Tambah Kategori
         </Button>
       </div>
-      <div className="overflow-x-auto border border-border rounded-lg bg-card">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Gambar</th>
-              <th className="px-4 py-3 font-medium">Nama</th>
-              <th className="px-4 py-3 font-medium">Slug</th>
-              <th className="px-4 py-3 font-medium text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr
-                key={category.id}
-                className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
-              >
-                <td className="px-4 py-3">
-                  {category.imageUrl ? (
-                    <img
-                      src={category.imageUrl}
-                      alt={`Gambar ${category.name}`}
-                      className="h-10 w-10 rounded object-cover border border-border"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded border border-dashed border-border bg-muted/40 flex items-center justify-center">
-                      <ImageIcon className="size-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-3 font-medium text-foreground">
-                  {category.name}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant="secondary">{category.slug}</Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(category)}
-                    >
-                      <Pencil />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setCategoryToDelete(category)}
-                    >
-                      <Trash2 />
-                      Hapus
-                    </Button>
-                  </div>
-                </td>
+
+      {categories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border border-border rounded-lg bg-card">
+          <Tags className="size-10 text-muted-foreground mb-4" />
+          <p className="text-sm text-muted-foreground mb-4">
+            Belum ada kategori.
+          </p>
+          <Button onClick={openCreateDialog}>
+            <Plus />
+            Tambah Kategori
+          </Button>
+        </div>
+      ) : (
+        <div className="overflow-x-auto border border-border rounded-lg bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <th className="px-4 py-3 font-medium">Gambar</th>
+                <th className="px-4 py-3 font-medium">Nama</th>
+                <th className="px-4 py-3 font-medium">Slug</th>
+                <th className="px-4 py-3 font-medium text-right">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr
+                  key={category.id}
+                  className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    {category.imageUrl ? (
+                      <img
+                        src={category.imageUrl}
+                        alt={`Gambar ${category.name}`}
+                        className="h-10 w-10 rounded object-cover border border-border"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded border border-dashed border-border bg-muted/40 flex items-center justify-center">
+                        <ImageIcon className="size-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    {category.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="secondary">{category.slug}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(category)}
+                      >
+                        <Pencil />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setCategoryToDelete(category)}
+                      >
+                        <Trash2 />
+                        Hapus
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Form create/edit */}
       <Dialog
@@ -322,23 +332,23 @@ export function CategoryList({
               </div>
 
               <div>
-              <Label htmlFor="category-name">Nama Kategori</Label>
-              <Input
-                id="category-name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (nameError) setNameError("");
-                }}
-                aria-invalid={!!nameError}
-                placeholder="cth: Kemeja"
-                className="mt-1.5"
-                autoFocus
-              />
-              {nameError && (
-                <p className="mt-1.5 text-sm text-destructive">{nameError}</p>
-              )}
-            </div>
+                <Label htmlFor="category-name">Nama Kategori</Label>
+                <Input
+                  id="category-name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) setNameError("");
+                  }}
+                  aria-invalid={!!nameError}
+                  placeholder="cth: Kemeja"
+                  className="mt-1.5"
+                  autoFocus
+                />
+                {nameError && (
+                  <p className="mt-1.5 text-sm text-destructive">{nameError}</p>
+                )}
+              </div>
             </div>
             <DialogFooter className="mt-6">
               <Button
