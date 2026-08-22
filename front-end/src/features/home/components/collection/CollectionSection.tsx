@@ -15,7 +15,8 @@ export default function CollectionSection() {
     async function fetchProducts() {
       try {
         const data = await productService.getAll();
-        setProducts(data.slice(0, 3)); // Ambil  produk pertama
+        const bestSellers = data.filter((p) => p.label === "BEST_SELLER");
+        setProducts(bestSellers.slice(0, 3));
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -25,6 +26,12 @@ export default function CollectionSection() {
 
     fetchProducts();
   }, []);
+
+  // Kalau tidak ada produk berlabel Best Seller sama sekali,
+  // section ini tidak ditampilkan (sama seperti perilaku CategorySection)
+  if (!isLoading && products.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 md:py-28">
@@ -36,15 +43,14 @@ export default function CollectionSection() {
           }`}
         >
           <span className="font-body text-xs uppercase tracking-[0.3em] text-accent">
-            Koleksi Istimewa
+            Favorit Pelanggan
           </span>
           <h2 className="font-heading text-3xl md:text-4xl font-bold mt-2">
-            Batik Modern Collection
+            Best Seller
           </h2>
 
           <p className="text-gray-600 mt-4">
-            Interpretasi modern dari warisan batik Indonesi
-            <br></br>dirancang untuk gaya hidup masa kini
+            Pilihan terlaris yang paling banyak dicintai pelanggan kami
           </p>
 
           {isLoading ? (
